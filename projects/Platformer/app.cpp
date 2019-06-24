@@ -23,8 +23,8 @@ bool App::init()
 	kf::LogSystem::getDefault().addFile("base.log");
 	kf_log("Started");
 
-	m_window.create(sf::VideoMode(1920, 1080, 32), "Platformer - Main");
-	m_window.setFramerateLimit(60);
+	m_window.create(sf::VideoMode(300, 600, 32), "Platformer - Home");
+	m_window.setFramerateLimit(24);
 	
 	if (!m_font.loadFromFile("data/bluehigh.ttf"))
 	{

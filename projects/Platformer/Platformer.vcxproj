@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{27DBBD6B-8FB3-4710-B846-6C831DBE17A1}</ProjectGuid>
+    <ProjectGuid>{02557B24-C062-4579-A617-6F4732254420}</ProjectGuid>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>base</RootNamespace>
@@ -98,13 +98,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="app.h" />
-    <ClInclude Include="pMain.h" />
+    <ClInclude Include="editorManager.h" />
+    <ClInclude Include="example.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="rabbit.h" />
+    <ClInclude Include="tileDefinition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="app.cpp" />
     <ClCompile Include="dependencies.cpp" />
-    <ClCompile Include="pMain.cpp" />
+    <ClCompile Include="editorManager.cpp" />
+    <ClCompile Include="example.cpp" />
+    <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="rabbit.cpp" />
+    <ClCompile Include="tileDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dev\components\kage2dutil\kage2dutil.vcxproj">

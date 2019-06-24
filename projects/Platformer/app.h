@@ -23,7 +23,6 @@ protected:
 	sf::Clock m_clock;
 	sf::Font m_font;
 	bool m_running;
-	
 
 public:
 	App();
