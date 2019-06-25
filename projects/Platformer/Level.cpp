@@ -2,21 +2,39 @@
 
 
 
-Level::Level(sf::Sprite templateSprite, int mapSizeX, int mapSizeY)
+Level::Level(sf::Sprite &templateSprite, int mapSizeX, int mapSizeY, sf::Sprite &backgroundSprite)
 {
+	
 	setMapSize(mapSizeX, mapSizeY);
 	tilePX = templateSprite.getTexture()->getSize().x;
 	tileCount = templateSprite.getTexture()->getSize().y / tilePX;
 	textureAtlas = templateSprite;
 	atlasTileDefinitions.resize(tileCount);
+	background = backgroundSprite;
 	
-	for (int i = 0; i <= atlasTileDefinitions.max_size(); i++)
+	for (int i = 0; i < atlasTileDefinitions.size(); i++)
 	{
-		tileDefinition *tile = new tileDefinition();
-		tile->atlasIndex = i;
-		tile->blocking = true;
-		tile->death = false;
-		//tile->tileSprite = templateSprite.setPosition?? i * tilePX + tilePX
+		atlasTileDefinitions[i].atlasIndex = i;
+		atlasTileDefinitions[i].blocking = true;
+		atlasTileDefinitions[i].death = false;
+		atlasTileDefinitions[i].tileSprite.setTexture(*templateSprite.getTexture());
+		kage::selectSpriteTile1D(&atlasTileDefinitions[i].tileSprite, i, tilePX, tilePX);
+	}
+	
+	int index = 0;
+	int colX = mapSizeX / tilePX;
+	int colY = mapSizeY / tilePX;
+	levelRenderTileDefinitions.resize(colX * colY);
+
+	for (float y = 0; y < colY; y ++)
+	{
+		for (float x = 0; x < colX; x ++)
+		{
+			levelRenderTileDefinitions[index].x = x;
+			levelRenderTileDefinitions[index].y = y;
+			levelRenderTileDefinitions[index].index = -1; // -1 means dont draw
+			index++;
+		}
 	}
 }
 
