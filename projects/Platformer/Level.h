@@ -2,6 +2,7 @@
 #include "app.h"
 #include "tileDefinition.h"
 #include "levelRenderTileDefinition.h"
+#include "objectNodeDefinition.h"
 
 class Level
 {
@@ -11,16 +12,7 @@ public:
 	void clear(int tile);
 	void load(std::string path);
 	void save(std::string path);
-	void render(sf::RenderWindow window);
-	int getMapWidth();
-	int getMapHeight();
-	int getTileWidth();
-	int getTileHeight();
-	void setMapSize(int x, int y);
-	void setTileSize(int x, int y);
-	int getTile(int x, int y);
-	void setTile(int tile, int x, int y);
-
+	void render(sf::RenderWindow &window);
 
 	int mapWidth;
 	int mapHeight;
@@ -34,5 +26,14 @@ public:
 	std::vector<tileDefinition> atlasTileDefinitions;
 	float tilePX;
 	int tileCount;
+	std::vector<objectNodeDefinition> spawnPointDefinitions;
+
+	int playerStartHealth = 500;
+	int playerMaxHealth = 1000;
+	int playerMoveSpeed = 500;
+	int playerJumpForce = 100;
+	int shootDamage = 100;
+	int jumpOnTopDamage = 0;
+	int healPickupAmount = 200;
 };
 

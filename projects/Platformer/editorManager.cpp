@@ -2,14 +2,17 @@
 #include "Level.h"
 #include "tileDefinition.h"
 #include "levelRenderTileDefinition.h"
-#include <fstream>
-#include <iostream>
+#include <string>
+#include "levelDataFileHandler.h"
+
+//debug
+#include "levelDataModel.h"
 
 bool run = true;
 sf::RenderWindow window;
 Level *level;
 
-
+//Pre choosen background, setup to add pick your own functionality later.
 //https://opengameart.org/content/grid-background
 sf::Sprite *backgroundChosen;
 sf::Sprite *background01;
@@ -17,22 +20,31 @@ sf::Sprite *background01_Thumnail;
 sf::Sprite *background02;
 sf::Sprite *background02_Thumnail;
 
+//https://opengameart.org/content/star
+sf::Sprite *spawnIcon;
+//sf::Sprite *spawnIcon_Thumnail;
+
 float thumSizeBackground = 100.0f;
 float thumSizeTile = 50.0f;
 
-int selectedTileIdex = 0;
+int selectedTileIdex = -0;
 
-enum EditorStates
-{
-	None,
+enum EditorStates {
 	Paint,
-	Move,
-	Erase,
+	Spawn,
 };
-EditorStates editorState = None;
+
+EditorStates editorState = Paint;
 
 editorManager::editorManager()
 {
+	//	TBH, direct copy from SFML and KAGE, was hard to get working and cant explain fully apart from certail calls will conflict with the first window.
+	//	The corect methode would be to run multiple threads but that opens another can of worms, and I dont know how it would go with the kage:: interfance.
+	//	So I have bastardised it to basicaly jump into the main windows drawing ImGui cycle, then jump out when done and continue the drawing of the main window
+	//	Note, certail calls have been commented out, these are the one that would be need if done the right way.
+	//	This may be the cause of my bug, and new window has to be opend twice before certain window rendering will occure.
+	//	I have added the run bool which will stop any further rendering when the window gets closed, which stops the errors when something like windowRefIndex our of range or somehting.
+
 	start();
 
 	run = true;
@@ -97,46 +109,140 @@ void editorManager::start()
 	backgroundChosen = background01;
 
 	level = new Level(*kage::TextureManager::getSprite("data/Platformer/spritesheet01.png"), 1920, 1080, *background01);
+
+	//Call after Level ^, needs the tilePX to calculate acurate sprite size.
+	spawnIcon = kage::TextureManager::getSprite("data/Platformer/spawn01.png");
+	sf::Vector2u spawnTexRes = spawnIcon->getTexture()->getSize();
+	spawnIcon->setScale(level->tilePX / spawnTexRes.x, level->tilePX / spawnTexRes.y);
 }
+
+bool showExportPopup = false;
+bool showImportPopup = false;
+char dataPathText;
 
 void editorManager::update(float deltaT)
 {
-	//Menu Bar
-	ImGui::BeginMainMenuBar();
+#pragma region ImGuiTooplStrip
 
-	if (ImGui::Button("Import"))
+
+	if (ImGui::BeginMainMenuBar())
 	{
+		if (ImGui::Button("Import"))
+		{
+			showImportPopup = true;
+			ImGui::SetNextWindowPos(ImVec2(window.getSize().x / 2, window.getSize().y / 2));
+			ImGui::SetNextWindowSize(ImVec2(window.getSize().x / 2, window.getSize().y / 5));
+		}
+		if (ImGui::Button("Export"))
+		{
+			showExportPopup = true;
+			ImGui::SetNextWindowPos(ImVec2(window.getSize().x / 2, window.getSize().y / 2));
+			ImGui::SetNextWindowSize(ImVec2(window.getSize().x / 2, window.getSize().y / 5));
+		}
+
+		if (ImGui::Button("Exit"))
+		{
+			run = false;
+			window.close();
+		}
+		ImGui::EndMainMenuBar();
 	}
-	if (ImGui::Button("Export"))
+
+	class Student
+
 	{
-		/*
-		std::ofstream stream("hmantest.dat", std::ios::binary);
-		stream.write((char *)&level, sizeof(level));
-		std::cout << "Saved\n";
 
-		Level *newl;
-		std::ifstream ifs("hmantest.dat", std::ios::binary);
+	public:
 
-		ifs.read((char *)&newl, sizeof(newl));
+		char   FullName[40];
 
-		std::cout << "Loaded\n";
+		char   CompleteAddress[120];
 
-		std::cout << newl->atlasTileDefinitions.size();
-		*/
+		char   Gender;
 
-	}
-	if (ImGui::Button("Exit"))
+		double Age;
+
+		bool   LivesInASingleParentHome;
+
+	};
+
+	if (showExportPopup)
 	{
-		run = false;
-		window.close();
+		ImGui::OpenPopup("ExportPopup");
+		if (ImGui::BeginPopupModal("ExportPopup"))
+		{
+			ImGui::Text("Select File Name, Letters Only.");
+			ImGui::InputText("Select File Name", &dataPathText, 15);
+			ImGui::Text("\n");
+			ImGui::Text("\n");
+			if(ImGui::Button("Cancel")) {
+				showExportPopup = false;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Save")) {
+				
+				levelDataFileHandler dataHandler;
+				std::string relPath = "pformLevel_";
+				relPath = relPath + std::string(&dataPathText);
+				relPath = relPath + ".bin";
+				dataHandler.SaveLevel(*level, relPath, "data/Platformer/spritesheet01.png", "data/Platformer/background02.png");
+				showExportPopup = false;
+			}
+			ImGui::EndPopup();
+		}
 	}
-	ImGui::EndMainMenuBar();
-
 	
-	//Toolbox
-	ImGui::Begin("Level Editor Tools");
-	ImGui::Text("Set Background");
+	if (showImportPopup)
+	{
+		ImGui::OpenPopup("ImportPopup");
+		if (ImGui::BeginPopupModal("ImportPopup"))
+		{
+			ImGui::Text("Select File Name, Letters Only.");
+			ImGui::InputText("Select File Name", &dataPathText, 15);
+			ImGui::Text("\n");
+			ImGui::Text("\n");
+			if (ImGui::Button("Cancel")) {
+				showImportPopup = false;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Import")) {
+				std::string relPah = "pformLevel_";
+				relPah = relPah + std::string(&dataPathText);
+				relPah = relPah + ".bin";
+				std::cout << "Path: " << relPah;
+				levelDataFileHandler dataHandler;
+				//level = &dataHandler.LoadLevel(std::string(&dataPathText));
+				dataHandler.LoadLevel(std::string(&dataPathText));
+				showImportPopup = false;
+			}
+			ImGui::EndPopup();
+		}
+	}
 
+#pragma endregion
+
+#pragma region ImGuiToolBox
+	ImGui::Begin("Level Editor Tools");
+
+	//	Gameplay Options
+	ImGui::Separator();
+	ImGui::Text("Gameplay Settings:");
+	ImGui::Text("\n");
+	ImGui::SliderInt("Player Move Speed", &level->playerMoveSpeed, 250, 1000);
+	ImGui::SliderInt("Player Jump Force", &level->playerJumpForce, 50, 200);
+	ImGui::Text("\n");
+	ImGui::SliderInt("Player Shoot Damage", &level->shootDamage, 1, 1000);
+	ImGui::SliderInt("Player Jump Attack Damage", &level->jumpOnTopDamage, 0, 1000);
+	ImGui::Text("\n");
+	ImGui::SliderInt("Player Start Health", &level->playerStartHealth, 1, 1000);
+	ImGui::SliderInt("Player Max Health", &level->playerMaxHealth, 1, 1000);
+	ImGui::SliderInt("Health Pickup Amount", &level->healPickupAmount, 0, 1000);
+	ImGui::Text("\n");
+	ImGui::Separator();
+	ImGui::Text("\n");
+
+	//	Background
+	ImGui::Text("Set Background");
 	if (ImGui::ImageButton(*background01_Thumnail)) {
 		backgroundChosen = background01;
 		level->background = *background01;
@@ -146,109 +252,149 @@ void editorManager::update(float deltaT)
 		backgroundChosen = background02;
 		level->background = *background02;
 	}
-
+	ImGui::Text("\n");
 	ImGui::Separator();
-	
 
-	ImGui::Text("Editor Options");
-	ImGui::Columns(4);
-	if (ImGui::Button("Nothing"))
-	{
-		editorState = None;
-	}
-	ImGui::NextColumn();
-	if (ImGui::Button("Paint"))
+	//Editor Instructions
+	ImGui::Text("\n");
+	ImGui::Text("Editor Intructions:");
+	ImGui::Text("\n");
+	ImGui::Text("Left Click - Add\nRight Click - Remove");
+	ImGui::Text("\n");
+	ImGui::Text("Paint - Paint tiles\nSpawn - Add Spawn Points for gameplay");
+	ImGui::Text("\n");
+	ImGui::Text("Character in middle of screen used as reference for actual characters.");
+	ImGui::Text("\n");
+	ImGui::Separator();
+	ImGui::Text("\n");
+
+	//Editor Mode Selector
+	ImGui::Columns(2);
+	if (ImGui::Button("Paint Mode"))
 	{
 		editorState = Paint;
 	}
-	
 	ImGui::NextColumn();
-	if (ImGui::Button("Erase"))
+	if (ImGui::Button("Spawn Mode"))
 	{
-		editorState = Erase;
-		selectedTileIdex = -1;;
-	}
-	ImGui::NextColumn();
-	if (ImGui::Button("Move"))
-	{
-		editorState = Move;
+		editorState = Spawn;
 	}
 	ImGui::Columns(1);
 
-
-	ImGui::Separator();
-
-	ImGui::Text("Current Tile Index: " + selectedTileIdex);
-	int col = ImGui::GetWindowSize().x / (level->tilePX + 10); //Additinal int is a column buffer to keep enough space to always have a square button
-	if (col < 1)
-		col = 1;
-	ImGui::Columns(col);
-	for(int i = 0; i < level->atlasTileDefinitions.size(); i++)
+	//Tile Paint Selector
+	//	Additinal int is a column buffer to keep enough space to always have a square button
+	int tileCols = ImGui::GetWindowSize().x / (level->tilePX + 10);
+	if (tileCols < 1)
+		tileCols = 1;
+	ImGui::Columns(tileCols);
+	//	Foreach atlas tile, a group of button and checkboxes are added to,
+	//	select painting tile, and mark the properties of that tile group.
+	for (int i = 0; i < level->atlasTileDefinitions.size(); i++)
 	{
 		tileDefinition &tile = level->atlasTileDefinitions[i];
-		
+
 		ImGui::PushID(tile.atlasIndex);
-		if (ImGui::ImageButton(tile.tileSprite)) {
+		if (ImGui::ImageButton(tile.tileSprite))
+		{
 			selectedTileIdex = tile.atlasIndex;
-			std::cout << tile.atlasIndex;
 		}
 		ImGui::PopID();
-		//ImGui::PushID(tile.atlasIndex);
+
 		char buf[100];
 		sprintf(buf, "Block##%d", i);
 		ImGui::Checkbox(buf, &tile.blocking);
-		//ImGui::PopID();
+
 		sprintf(buf, "Kill##%d", i);
-		//ImGui::PushID(tile.atlasIndex+1000);
 		ImGui::Checkbox(buf, &tile.death);
-		//ImGui::PopID();
 		ImGui::NextColumn();
 	}
 	ImGui::Columns(1);
-	ImGui::End();
+#pragma endregion
 
+	
 	if (!ImGui::GetIO().WantCaptureMouse)
 	{
-		// The mouse isn’t over an ImGui window,
-		// do SFML input.
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-			int mouseX = sf::Mouse::getPosition().x - window.getPosition().x;
-			int mouseY = sf::Mouse::getPosition().y - window.getPosition().y;
 
-			int x = mouseX / level->tilePX;
-			int y = mouseY / level->tilePX;
+		//	Get the mouse position relative to the screen, the subtracts the window position relative to the screen.
+		//	This give the mouse pos of the window. If there is something in SFML that does that, more time wasited HAHA -_-
+		//	Takes the pos, then devides by tilePX, this wil give a new pos that can be used to refrence tileDefinitions for other funtion calls.
+		int mouseX = sf::Mouse::getPosition().x - window.getPosition().x;
+		int mouseY = sf::Mouse::getPosition().y - window.getPosition().y;
 
-			int pointX = x * level->tilePX;
-			int pointy = x * level->tilePX;
+		int x = mouseX / level->tilePX;
+		int y = mouseY / level->tilePX;
 
-
-			//Implement linq select statement later!! This is dirty haha
-			for (int i = 0; i < level->levelRenderTileDefinitions.size(); i++)
+		switch (editorState)
+		{
+		case Paint:
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
 			{
-				if (level->levelRenderTileDefinitions[i].x == x && level->levelRenderTileDefinitions[i].y == y)
-				{
-					level->levelRenderTileDefinitions[i].index = selectedTileIdex;
-				}
+				SetRenderTileDef(x, y, selectedTileIdex);
 			}
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
+			{
+				SetRenderTileDef(x, y, -1);
+			}
+			break;
 
+		case Spawn:
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+			{
+				SetSpawnTileDef(x, y, true);
+			}
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
+			{
+				SetSpawnTileDef(x, y, false);
+			}
+			break;
+
+		default:
+			break;
 		}
 	}
 
-	
+	ImGui::End();
 }
 
 void editorManager::render()
 {
 	window.draw(*backgroundChosen);
+	level->render(window);
 
-	for (int i = 0; i < level->levelRenderTileDefinitions.size(); i++)
+	//Render spawn pos, done from editor as its not rendered in play mode.
+	//For explanation, look at level->render as its the same logic.
+	for (int i = 0; i < level->spawnPointDefinitions.size(); i++)
 	{
-		if (level->levelRenderTileDefinitions[i].index >= 0)
+		if (level->spawnPointDefinitions[i].active)
 		{
-			sf::Sprite drawSprite = level->atlasTileDefinitions[level->levelRenderTileDefinitions[i].index].tileSprite;
-			drawSprite.setPosition(level->levelRenderTileDefinitions[i].x * level->tilePX, level->levelRenderTileDefinitions[i].y * level->tilePX);
+			sf::Sprite drawSprite = *spawnIcon;
+			drawSprite.setPosition(level->spawnPointDefinitions[i].x * level->tilePX, level->spawnPointDefinitions[i].y * level->tilePX);
 			window.draw(drawSprite);
 		}
 	}
 }
 
+//	If a tile that matches the x,y is found, set its index to whatever painting tile is selected. Or -1 if removing.
+void editorManager::SetRenderTileDef(int x, int y, int value)
+{
+	//Implement linq select statement later!! This is dirty haha
+	for (int i = 0; i < level->levelRenderTileDefinitions.size(); i++)
+	{
+		if (level->levelRenderTileDefinitions[i].x == x && level->levelRenderTileDefinitions[i].y == y)
+		{
+			level->levelRenderTileDefinitions[i].index = value;
+		}
+	}
+}
+
+//	If a tile that matches the x,y is found, set its active to true or false.
+void editorManager::SetSpawnTileDef(int x, int y, bool setActive = true)
+{
+	for (int i = 0; i < level->spawnPointDefinitions.size(); i++)
+	{
+		if (level->spawnPointDefinitions[i].x == x && level->spawnPointDefinitions[i].y == y)
+		{
+			level->spawnPointDefinitions[i].active = setActive;
+		}
+	}
+}
