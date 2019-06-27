@@ -7,7 +7,7 @@
 class Level
 {
 public:
-	Level(sf::Sprite &templateSprite, int mapSizeX, int mapSizeY, sf::Sprite &background);
+	Level();
 	~Level();
 	void clear(int tile);
 	void load(std::string path);

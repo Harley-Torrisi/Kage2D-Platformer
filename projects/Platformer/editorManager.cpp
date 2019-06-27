@@ -3,26 +3,14 @@
 #include "tileDefinition.h"
 #include "levelRenderTileDefinition.h"
 #include <string>
-#include "levelDataFileHandler.h"
-
-//debug
-#include "levelDataModel.h"
 
 bool run = true;
 sf::RenderWindow window;
 Level *level;
 
-//Pre choosen background, setup to add pick your own functionality later.
-//https://opengameart.org/content/grid-background
-sf::Sprite *backgroundChosen;
-sf::Sprite *background01;
-sf::Sprite *background01_Thumnail;
-sf::Sprite *background02;
-sf::Sprite *background02_Thumnail;
-
 //https://opengameart.org/content/star
 sf::Sprite *spawnIcon;
-//sf::Sprite *spawnIcon_Thumnail;
+sf::Sprite *helperIcon;
 
 float thumSizeBackground = 100.0f;
 float thumSizeTile = 50.0f;
@@ -33,7 +21,6 @@ enum EditorStates {
 	Paint,
 	Spawn,
 };
-
 EditorStates editorState = Paint;
 
 editorManager::editorManager()
@@ -97,23 +84,14 @@ editorManager::~editorManager()
 
 void editorManager::start()
 {
-	background01 = kage::TextureManager::getSprite("data/Platformer/background01.png");
-	background01_Thumnail = kage::TextureManager::getSprite("data/Platformer/background01.png");
-	background02 = kage::TextureManager::getSprite("data/Platformer/background02.png");
-	background02_Thumnail = kage::TextureManager::getSprite("data/Platformer/background02.png");
-	sf::Vector2u resolution = background01->getTexture()->getSize();
-	background01->setScale(float(window.getSize().x) / resolution.x, float(window.getSize().y) / resolution.y);
-	background01_Thumnail->setScale(thumSizeBackground / resolution.x, thumSizeBackground / resolution.y);
-	background02->setScale(float(window.getSize().x) / resolution.x, float(window.getSize().y) / resolution.y);
-	background02_Thumnail->setScale(thumSizeBackground / resolution.x, thumSizeBackground / resolution.y);
-	backgroundChosen = background01;
-
-	level = new Level(*kage::TextureManager::getSprite("data/Platformer/spritesheet01.png"), 1920, 1080, *background01);
+	level = new Level();
 
 	//Call after Level ^, needs the tilePX to calculate acurate sprite size.
 	spawnIcon = kage::TextureManager::getSprite("data/Platformer/spawn01.png");
 	sf::Vector2u spawnTexRes = spawnIcon->getTexture()->getSize();
 	spawnIcon->setScale(level->tilePX / spawnTexRes.x, level->tilePX / spawnTexRes.y);
+
+	helperIcon = kage::TextureManager::getSprite("data/Platformer/helper.png");
 }
 
 bool showExportPopup = false;
@@ -127,20 +105,20 @@ void editorManager::update(float deltaT)
 
 	if (ImGui::BeginMainMenuBar())
 	{
-		if (ImGui::Button("Import"))
+		if (ImGui::Button("Import Level"))
 		{
 			showImportPopup = true;
 			ImGui::SetNextWindowPos(ImVec2(window.getSize().x / 2, window.getSize().y / 2));
 			ImGui::SetNextWindowSize(ImVec2(window.getSize().x / 2, window.getSize().y / 5));
 		}
-		if (ImGui::Button("Export"))
+		if (ImGui::Button("Export Level"))
 		{
 			showExportPopup = true;
 			ImGui::SetNextWindowPos(ImVec2(window.getSize().x / 2, window.getSize().y / 2));
 			ImGui::SetNextWindowSize(ImVec2(window.getSize().x / 2, window.getSize().y / 5));
 		}
 
-		if (ImGui::Button("Exit"))
+		if (ImGui::Button("Exit Editor"))
 		{
 			run = false;
 			window.close();
@@ -180,12 +158,7 @@ void editorManager::update(float deltaT)
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Save")) {
-				
-				levelDataFileHandler dataHandler;
-				std::string relPath = "pformLevel_";
-				relPath = relPath + std::string(&dataPathText);
-				relPath = relPath + ".bin";
-				dataHandler.SaveLevel(*level, relPath, "data/Platformer/spritesheet01.png", "data/Platformer/background02.png");
+				level->save(std::string(&dataPathText));
 				showExportPopup = false;
 			}
 			ImGui::EndPopup();
@@ -206,13 +179,7 @@ void editorManager::update(float deltaT)
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Import")) {
-				std::string relPah = "pformLevel_";
-				relPah = relPah + std::string(&dataPathText);
-				relPah = relPah + ".bin";
-				std::cout << "Path: " << relPah;
-				levelDataFileHandler dataHandler;
-				//level = &dataHandler.LoadLevel(std::string(&dataPathText));
-				dataHandler.LoadLevel(std::string(&dataPathText));
+				level->load(std::string(&dataPathText));
 				showImportPopup = false;
 			}
 			ImGui::EndPopup();
@@ -239,22 +206,7 @@ void editorManager::update(float deltaT)
 	ImGui::SliderInt("Health Pickup Amount", &level->healPickupAmount, 0, 1000);
 	ImGui::Text("\n");
 	ImGui::Separator();
-	ImGui::Text("\n");
-
-	//	Background
-	ImGui::Text("Set Background");
-	if (ImGui::ImageButton(*background01_Thumnail)) {
-		backgroundChosen = background01;
-		level->background = *background01;
-	}
-	ImGui::SameLine();
-	if (ImGui::ImageButton(*background02_Thumnail)) {
-		backgroundChosen = background02;
-		level->background = *background02;
-	}
-	ImGui::Text("\n");
-	ImGui::Separator();
-
+	
 	//Editor Instructions
 	ImGui::Text("\n");
 	ImGui::Text("Editor Intructions:");
@@ -280,10 +232,12 @@ void editorManager::update(float deltaT)
 		editorState = Spawn;
 	}
 	ImGui::Columns(1);
+	ImGui::Text("\n");
+	ImGui::Separator();
 
 	//Tile Paint Selector
 	//	Additinal int is a column buffer to keep enough space to always have a square button
-	int tileCols = ImGui::GetWindowSize().x / (level->tilePX + 10);
+	int tileCols = ImGui::GetWindowSize().x / (level->tilePX + 25);
 	if (tileCols < 1)
 		tileCols = 1;
 	ImGui::Columns(tileCols);
@@ -306,6 +260,9 @@ void editorManager::update(float deltaT)
 
 		sprintf(buf, "Kill##%d", i);
 		ImGui::Checkbox(buf, &tile.death);
+
+		sprintf(buf, "Break##%d", i);
+		ImGui::Checkbox(buf, &tile.breakable);
 		ImGui::NextColumn();
 	}
 	ImGui::Columns(1);
@@ -351,6 +308,13 @@ void editorManager::update(float deltaT)
 		default:
 			break;
 		}
+
+		helperIcon->setPosition(x * level->tilePX, y * level->tilePX);
+	}
+
+	else
+	{
+		helperIcon->setPosition(-100, -100);
 	}
 
 	ImGui::End();
@@ -358,7 +322,6 @@ void editorManager::update(float deltaT)
 
 void editorManager::render()
 {
-	window.draw(*backgroundChosen);
 	level->render(window);
 
 	//Render spawn pos, done from editor as its not rendered in play mode.
@@ -372,6 +335,8 @@ void editorManager::render()
 			window.draw(drawSprite);
 		}
 	}
+
+	window.draw(*helperIcon);
 }
 
 //	If a tile that matches the x,y is found, set its index to whatever painting tile is selected. Or -1 if removing.

@@ -101,8 +101,6 @@
     <ClInclude Include="editorManager.h" />
     <ClInclude Include="example.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="levelDataFileHandler.h" />
-    <ClInclude Include="levelDataModel.h" />
     <ClInclude Include="levelRenderTileDefinition.h" />
     <ClInclude Include="objectNodeDefinition.h" />
     <ClInclude Include="rabbit.h" />
@@ -114,8 +112,6 @@
     <ClCompile Include="editorManager.cpp" />
     <ClCompile Include="example.cpp" />
     <ClCompile Include="Level.cpp" />
-    <ClCompile Include="levelDataFileHandler.cpp" />
-    <ClCompile Include="levelDataModel.cpp" />
     <ClCompile Include="levelRenderTileDefinition.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="objectNodeDefinition.cpp" />

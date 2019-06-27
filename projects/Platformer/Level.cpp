@@ -1,16 +1,21 @@
 #include "Level.h"
+#include <fstream>
+#include <iostream>
 
 
-
-Level::Level(sf::Sprite &templateSprite, int mapSizeX, int mapSizeY, sf::Sprite &backgroundSprite)
+Level::Level()
 {
-	mapWidth = mapSizeX;
-	mapHeight = mapSizeY;
-	tilePX = templateSprite.getTexture()->getSize().x;
-	tileCount = templateSprite.getTexture()->getSize().y / tilePX;
-	textureAtlas = templateSprite;
+	mapWidth = 1920;
+	mapHeight = 1080;
+	textureAtlas = *kage::TextureManager::getSprite("data/Platformer/tilesheet.png");
+
+	background = *kage::TextureManager::getSprite("data/Platformer/background01.png");
+	sf::Vector2u resolution = background.getTexture()->getSize();
+	background.setScale(1920 / resolution.x, 1080 / resolution.y);
+
+	tilePX = textureAtlas.getTexture()->getSize().x;
+	tileCount = textureAtlas.getTexture()->getSize().y / tilePX;
 	atlasTileDefinitions.resize(tileCount);
-	background = backgroundSprite;
 	
 	//	Atlas Tile definitions are the tiles stored to represent the painting tiles, not whats on the map.
 	//	When a new level class is constructed it requires an atlas. So its ready of the bat.
@@ -22,7 +27,8 @@ Level::Level(sf::Sprite &templateSprite, int mapSizeX, int mapSizeY, sf::Sprite 
 		atlasTileDefinitions[i].atlasIndex = i;
 		atlasTileDefinitions[i].blocking = true;
 		atlasTileDefinitions[i].death = false;
-		atlasTileDefinitions[i].tileSprite.setTexture(*templateSprite.getTexture());
+		atlasTileDefinitions[i].breakable = false;
+		atlasTileDefinitions[i].tileSprite.setTexture(*textureAtlas.getTexture());
 		kage::selectSpriteTile1D(&atlasTileDefinitions[i].tileSprite, i, tilePX, tilePX);
 	}
 
@@ -34,8 +40,8 @@ Level::Level(sf::Sprite &templateSprite, int mapSizeX, int mapSizeY, sf::Sprite 
 	//	index of -1 one is used to flag the tile as dont draw.
 	//	Any methode trying to cordinate with this array will need to divide the mouse cord by tilePX, as to match up.
 	//	This methode is better as it acts as if there is snapping, and limits the itterations through the array giving better performance.
-	float width	= ((float)mapSizeX / tilePX) + tilePX;
-	float height = ((float)mapSizeY / tilePX) + tilePX;
+	float width	= ((float)mapWidth / tilePX) + tilePX;
+	float height = ((float)mapHeight / tilePX) + tilePX;
 	levelRenderTileDefinitions.resize(width * height);
 	spawnPointDefinitions.resize(width * height);
 	for (int i = 0; i < levelRenderTileDefinitions.size(); i++)
@@ -64,18 +70,221 @@ void Level::clear(int atlasTileIndex = -1)
 	}
 }
 
+class LevelData{ 
+public:
+
+	class RenderDef{
+	public:
+		int x;
+		int y;
+		int index;
+	};
+
+	class NodeDef {
+	public:
+		int x;
+		int y;
+		bool active;
+	};
+
+	class AtlasDef {
+	public:
+		bool isBlocking;
+		bool isDeath;
+	};
+
+	int playerStartHealth;
+	int playerMaxHealth;
+	int playerMoveSpeed;
+	int playerJumpForce;
+	int shootDamage;
+	int jumpOnTopDamage;
+	int healPickupAmount;
+};
+
 void Level::load(std::string path)
 {
+	//Game Settings
+	std::string prefsPath = "pformLevel_";
+	prefsPath = prefsPath + std::string(path);
+	prefsPath = prefsPath + "_GamePrefs";
+	prefsPath = prefsPath + ".csv";
+	std::fstream prefsFile;
+	prefsFile.open(prefsPath, std::ios::in);
+	for (int i = 0; i < levelRenderTileDefinitions.size(); i++)
+	{
+		std::string s_playerStartHealth;
+		std::string s_playerMaxHealth;
+		std::string s_playerMoveSpeed;
+		std::string s_playerJumpForce;
+		std::string s_shootDamage;
+		std::string s_jumpOnTopDamage;
+		std::string s_healPickupAmount;
 
+		std::getline(prefsFile, s_playerStartHealth, ',');
+		std::getline(prefsFile, s_playerMaxHealth, ',');
+		std::getline(prefsFile, s_playerMoveSpeed, ',');
+		std::getline(prefsFile, s_playerJumpForce, ',');
+		std::getline(prefsFile, s_shootDamage, ',');
+		std::getline(prefsFile, s_jumpOnTopDamage, ',');
+		std::getline(prefsFile, s_healPickupAmount, '\n');
+
+		playerStartHealth = std::atoi(s_playerStartHealth.c_str());
+		playerMaxHealth = std::atoi(s_playerMaxHealth.c_str());
+		playerMoveSpeed = std::atoi(s_playerMoveSpeed.c_str());
+		playerJumpForce = std::atoi(s_playerJumpForce.c_str());
+		shootDamage = std::atoi(s_shootDamage.c_str());
+		jumpOnTopDamage = std::atoi(s_jumpOnTopDamage.c_str());
+		healPickupAmount = std::atoi(s_healPickupAmount.c_str());
+	}
+
+	
+	//Render Definitions
+	std::string renderPath = "pformLevel_";
+	renderPath = renderPath + std::string(path);
+	renderPath = renderPath + "_RenderDef";
+	renderPath = renderPath + ".csv";
+	std::fstream renderFile;
+	renderFile.open(renderPath, std::ios::in);
+	for (int i = 0; i < levelRenderTileDefinitions.size(); i++)
+	{
+		std::string index;
+		std::string x;
+		std::string y;
+
+		std::getline(renderFile, x, ',');
+		std::getline(renderFile, y, ',');
+		std::getline(renderFile, index, '\n');
+		
+		levelRenderTileDefinitions[i].x = std::atoi(x.c_str());
+		levelRenderTileDefinitions[i].y = std::atoi(y.c_str());
+		levelRenderTileDefinitions[i].index = std::atoi(index.c_str());
+
+		//std::cout << index << "," << x << "," << y << "\n";
+	}
+	
+	//Spawn Definitions
+	std::string spawnPath = "pformLevel_";
+	spawnPath = spawnPath + std::string(path);
+	spawnPath = spawnPath + "_SpawnDef";
+	spawnPath = spawnPath + ".csv";
+	std::fstream spawnFile;
+	spawnFile.open(spawnPath, std::ios::in);
+	for (int i = 0; i < spawnPointDefinitions.size(); i++)
+	{
+		std::string active;
+		std::string x;
+		std::string y;
+
+		std::getline(spawnFile, x, ',');
+		std::getline(spawnFile, y, ',');
+		std::getline(spawnFile, active, '\n');
+
+		spawnPointDefinitions[i].x = std::atoi(x.c_str());
+		spawnPointDefinitions[i].y = std::atoi(y.c_str());
+		std::istringstream(active) >> spawnPointDefinitions[i].active;
+	}
+	
+	//Atlas Definitions
+	std::string atlasPath = "pformLevel_";
+	atlasPath = atlasPath + std::string(path);
+	atlasPath = atlasPath + "_AtlasDef";
+	atlasPath = atlasPath + ".csv";
+	std::fstream atlasFile;
+	atlasFile.open(atlasPath, std::ios::in);
+	for (int i = 0; i < atlasTileDefinitions.size(); i++)
+	{
+		std::string blocking;
+		std::string death;
+		std::string index;
+		std::string breakable;
+
+		std::getline(atlasFile, blocking, ',');
+		std::getline(atlasFile, death, ',');
+		std::getline(atlasFile, index, ',');
+		std::getline(atlasFile, breakable, '\n');
+
+		std::istringstream(blocking) >> atlasTileDefinitions[i].blocking;
+		std::istringstream(death) >> atlasTileDefinitions[i].death;
+		atlasTileDefinitions[i].atlasIndex = std::atoi(index.c_str());
+		std::istringstream(breakable) >> atlasTileDefinitions[i].breakable;
+	}
 }
 
 void Level::save(std::string path)
 {
+	//Game Settings
+	std::string prefsPath = "pformLevel_";
+	prefsPath = prefsPath + std::string(path);
+	prefsPath = prefsPath + "_GamePrefs";
+	prefsPath = prefsPath + ".csv";
+	std::fstream prefsFile;
+	prefsFile.open(prefsPath, std::ios::out);
+	for (int i = 0; i < levelRenderTileDefinitions.size(); i++)
+	{
+		prefsFile
+			<< playerStartHealth << ","
+			<< playerMaxHealth << ","
+			<< playerMoveSpeed << ","
+			<< playerJumpForce << ","
+			<< shootDamage << ","
+			<< jumpOnTopDamage << ","
+			<< healPickupAmount << std::endl;
+	}
 
+
+
+	//Render Definitions
+	std::string renderPath = "pformLevel_";
+	renderPath = renderPath + std::string(path);
+	renderPath = renderPath + "_RenderDef";
+	renderPath = renderPath + ".csv"; 
+	std::fstream renderFile;
+	renderFile.open(renderPath, std::ios::out);
+	for (int i = 0; i < levelRenderTileDefinitions.size(); i++)
+	{
+		renderFile
+			<< levelRenderTileDefinitions[i].x << ","
+			<< levelRenderTileDefinitions[i].y << ","
+			<< levelRenderTileDefinitions[i].index << std::endl;
+	}
+	
+	//Spawn Definitions
+	std::string spawnPath = "pformLevel_";
+	spawnPath = spawnPath + std::string(path);
+	spawnPath = spawnPath + "_SpawnDef";
+	spawnPath = spawnPath + ".csv";
+	std::fstream spawnFile;
+	spawnFile.open(spawnPath, std::ios::out);
+	for (int i = 0; i < spawnPointDefinitions.size(); i++)
+	{
+		spawnFile
+			<< spawnPointDefinitions[i].x << ","
+			<< spawnPointDefinitions[i].y << ","
+			<< spawnPointDefinitions[i].active << std::endl;
+	}
+
+	//Atlas Definitions
+	std::string atlasPath = "pformLevel_";
+	atlasPath = atlasPath + std::string(path);
+	atlasPath = atlasPath + "_AtlasDef";
+	atlasPath = atlasPath + ".csv";
+	std::fstream atlasFile;
+	atlasFile.open(atlasPath, std::ios::out);
+	for (int i = 0; i < atlasTileDefinitions.size(); i++)
+	{
+		atlasFile
+			<< atlasTileDefinitions[i].blocking << ","
+			<< atlasTileDefinitions[i].death << ","
+			<< atlasTileDefinitions[i].atlasIndex << ","
+			<< atlasTileDefinitions[i].breakable << std::endl;
+	}
 }
 
 void Level::render(sf::RenderWindow &window)
 {
+	window.draw(background);
+
 	//The renderinf of tiles is done by fidning tileDefs that have a tile index higher than >= 0
 	//-1 being dont draw anything, 0 and up being a refrence to a tile in the atlas.
 	//If one is found it uses the index to take a refrence to the sprite, sets the position, then calls the draw funtion to pait to screen.
