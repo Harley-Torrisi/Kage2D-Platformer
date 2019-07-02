@@ -102,6 +102,8 @@ public:
 	int healPickupAmount;
 };
 
+//	This takes the selected csv files then iterates through the rows and colums to populate the level class.
+//	String converters are used for values that represent numbers and bools. Bools are represented by 0 and 1
 void Level::load(std::string path)
 {
 	//Game Settings
@@ -121,6 +123,7 @@ void Level::load(std::string path)
 		std::string s_jumpOnTopDamage;
 		std::string s_healPickupAmount;
 
+		//	getLine will use the io file and read from its current point, storing whats read until it hits the assigned break point.
 		std::getline(prefsFile, s_playerStartHealth, ',');
 		std::getline(prefsFile, s_playerMaxHealth, ',');
 		std::getline(prefsFile, s_playerMoveSpeed, ',');
@@ -211,6 +214,11 @@ void Level::load(std::string path)
 	}
 }
 
+//	This takes a path and generates four csv files that make up the level.
+//	Each CSV stores a different part; settings, atlasInfo, tileInfo, and spawnPosinfo.
+//	It iterates through each value and writes to a file, in the case of tile bases settings;
+//	This is done by saving to a colume, then moving onto the next column by using a coma and lew line to start a new row.
+//  This is using the coma delimated file methode, meaning programs can read the file, saying when a comma is hit, stop and do something else like store then read the next value.
 void Level::save(std::string path)
 {
 	//Game Settings

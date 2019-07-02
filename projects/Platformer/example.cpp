@@ -26,9 +26,6 @@ bool Example::start()
 	sf::Vector2u resolution = m_backgroundSprite->getTexture()->getSize();
 	m_backgroundSprite->setScale(float(m_window.getSize().x) / resolution.x, float(m_window.getSize().y) / resolution.y);
 
-	Rabbit *rabbit = kage::World::build<Rabbit>();
-	rabbit->position({ -100, -100 });
-
 	playButtonIcon = kage::TextureManager::getSprite("data/Platformer/play.png");
 	editButtonIcon = kage::TextureManager::getSprite("data/Platformer/edit.png");
 	exitButtonIcon = kage::TextureManager::getSprite("data/Platformer/exit.png");
