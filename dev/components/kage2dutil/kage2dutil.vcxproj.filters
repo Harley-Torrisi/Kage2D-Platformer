@@ -141,6 +141,9 @@
     <ClInclude Include="..\..\sdk\include\kf\kf_euler.h">
       <Filter>sdk\include\kf</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sdk\include\kage2dutil\physics.h">
+      <Filter>sdk\include\kage2dutil</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="anim.cpp" />
@@ -154,5 +157,6 @@
     <ClCompile Include="texture_manager.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="sound_manager.cpp" />
+    <ClCompile Include="physics.cpp" />
   </ItemGroup>
 </Project>

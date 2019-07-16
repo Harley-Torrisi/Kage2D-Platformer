@@ -31,6 +31,8 @@ namespace kage
 		GameObject *findByID(long long id);
 		GameObject *findByTag(std::string tag);
 		std::vector<GameObject *> findAllByTag(std::string tag);
+		float scale();	// Get the scaling factor between the physics engine and the renderer.
+		void scale(float s); // Set the scaling factor between the physics engine and the renderer.
 
 		template<typename T>
 		T *build()

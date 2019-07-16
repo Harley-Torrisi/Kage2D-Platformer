@@ -5,7 +5,7 @@
 // KAGE2D is released under the MIT License  
 // https://opensource.org/licenses/MIT
 ////////////////////////////////////////////////////////////
-
+ 
 #include "kage2dutil/gameobject.h"
 
 namespace kage
@@ -33,8 +33,8 @@ namespace kage
 		else
 		if(m_physicsStyle == e_psBox2D)
 		{
-//			m_position.set(m_body->GetPosition().x, 600-m_body->GetPosition().y);
-//			m_rotation = m_body->GetAngle();
+			m_position.set(m_body->GetPosition().x*kage::World::scale(), m_body->GetPosition().y*kage::World::scale());
+			m_rotation = m_body->GetAngle();
 		}
 	}
 
@@ -59,7 +59,7 @@ namespace kage
 		m_sprite = 0;
 		m_id = 0;
 		m_collide = true;
-//		m_body = 0;
+		m_body = 0;
 		m_rotation = 0;
 		m_gravity = true;
 		m_order = 0;
@@ -67,11 +67,11 @@ namespace kage
 
 	GameObject::~GameObject()
 	{
-		//if(m_body)
-		//{
-		//	m_body->GetWorld()->DestroyBody(m_body);
-		//	m_body = 0;
-		//}
+		if(m_body)
+		{
+			m_body->GetWorld()->DestroyBody(m_body);
+			m_body = 0;
+		}
 		World::remove(this);
 		delete m_sprite;
 		m_sprite = 0;
@@ -82,15 +82,25 @@ namespace kage
 		return new GameObject;
 	}
 
+	GameObject &GameObject::position(float x, float y)
+	{
+		return position(kf::Vector2(x, y));
+	}
+
 	GameObject &GameObject::position(const kf::Vector2 &pos)
 	{
 		m_position = pos;
 		if(m_physicsStyle == e_psBox2D)
 		{
-//			m_body->SetTransform(b2Vec2(m_position.x,600-m_position.y),m_rotation);
+			m_body->SetTransform(m_position, m_rotation.radians());
 		}
 
 		return *this;
+	}
+
+	GameObject &GameObject::velocity(float x, float y)
+	{
+		return velocity(kf::Vector2(x, y));
 	}
 
 	GameObject &GameObject::velocity(const kf::Vector2 &vel)
@@ -101,9 +111,14 @@ namespace kage
 		}
 		if(m_physicsStyle == e_psBox2D)
 		{
-//			m_body->SetLinearVelocity(b2Vec2(m_velocity.x,-m_velocity.y));
+			m_body->SetLinearVelocity(m_velocity);
 		}
 		return *this;
+	}
+
+	GameObject &GameObject::addForce(float x, float y)
+	{
+		return addForce(kf::Vector2(x, y));
 	}
 
 	GameObject &GameObject::addForce(const kf::Vector2 &force)
@@ -115,7 +130,7 @@ namespace kage
 		else
 		if(m_physicsStyle == e_psBox2D)
 		{
-//			m_body->ApplyForce(b2Vec2(force.x,-force.y),b2Vec2(0,0),true);
+			m_body->ApplyForce(force,b2Vec2(0,0),true);
 		}
 		return *this;
 	}
@@ -124,7 +139,7 @@ namespace kage
 	{
 		if (m_physicsStyle == e_psBox2D)
 		{
-			//return m_body->SetTransform(b2Vec2(m_position.x,600-m_position.y),m_rotation);
+			return m_body->GetTransform().p;
 		}
 		return m_position;
 	}
@@ -133,7 +148,7 @@ namespace kage
 	{
 		if (m_physicsStyle == e_psBox2D)
 		{
-			//return m_body->getLinearVelocity();
+			return m_body->GetLinearVelocity();
 		}
 		return m_velocity;
 	}
@@ -143,4 +158,17 @@ namespace kage
 
 	}
 
+	GameObject &GameObject::addImpulse(const kf::Vector2 &force)
+	{
+		return addImpulse(force.x, force.y);
+	}
+	
+	GameObject &GameObject::addImpulse(float x, float y)
+	{
+		if (m_physicsStyle == e_psBox2D)
+		{
+			m_body->ApplyLinearImpulse(b2Vec2(x,y), b2Vec2(0, 0), true);
+		}
+		return *this;
+	}
 }

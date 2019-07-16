@@ -11,6 +11,9 @@
 
 #include "kf/kf_types.h"
 #include "kf/kf_math.h"
+#include "Box2D/Common/b2Math.h"
+#include "SFML/System/Vector2.hpp"
+#include "imgui.h"
 
 #pragma warning( disable : 4201)
 

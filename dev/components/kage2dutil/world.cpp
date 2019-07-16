@@ -5,7 +5,7 @@
 // KAGE2D is released under the MIT License  
 // https://opensource.org/licenses/MIT
 ////////////////////////////////////////////////////////////
-
+ 
 #include "kage2dutil/world.h"
 #include "kage2dutil/gameobject.h"
 
@@ -21,6 +21,7 @@ namespace kage
 		kf::Vector2 worldGravity(0,0);
 		bool sortOrderDirty = false;
 		kf::Vector2 worldSize(1920, 1080);
+		float worldScale = 64.0f;
 
 		kf::Vector2 gravity()
 		{
@@ -192,8 +193,15 @@ namespace kage
 			}
 			return found;
 		}
+
+		float scale()
+		{
+			return worldScale;
+		}
+
+		void scale(float s)
+		{
+			worldScale = s;
+		}
 	}
-
-
-
 }

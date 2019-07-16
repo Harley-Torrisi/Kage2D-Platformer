@@ -107,7 +107,7 @@ public:
 void Level::load(std::string path)
 {
 	//Game Settings
-	std::string prefsPath = "pformLevel_";
+	std::string prefsPath = "data/Platformer/pformLevel_";
 	prefsPath = prefsPath + std::string(path);
 	prefsPath = prefsPath + "_GamePrefs";
 	prefsPath = prefsPath + ".csv";
@@ -143,7 +143,7 @@ void Level::load(std::string path)
 
 	
 	//Render Definitions
-	std::string renderPath = "pformLevel_";
+	std::string renderPath = "data/Platformer/pformLevel_";
 	renderPath = renderPath + std::string(path);
 	renderPath = renderPath + "_RenderDef";
 	renderPath = renderPath + ".csv";
@@ -167,7 +167,7 @@ void Level::load(std::string path)
 	}
 	
 	//Spawn Definitions
-	std::string spawnPath = "pformLevel_";
+	std::string spawnPath = "data/Platformer/pformLevel_";
 	spawnPath = spawnPath + std::string(path);
 	spawnPath = spawnPath + "_SpawnDef";
 	spawnPath = spawnPath + ".csv";
@@ -189,7 +189,7 @@ void Level::load(std::string path)
 	}
 	
 	//Atlas Definitions
-	std::string atlasPath = "pformLevel_";
+	std::string atlasPath = "data/Platformer/pformLevel_";
 	atlasPath = atlasPath + std::string(path);
 	atlasPath = atlasPath + "_AtlasDef";
 	atlasPath = atlasPath + ".csv";
@@ -222,7 +222,7 @@ void Level::load(std::string path)
 void Level::save(std::string path)
 {
 	//Game Settings
-	std::string prefsPath = "pformLevel_";
+	std::string prefsPath = "data/Platformer/pformLevel_";
 	prefsPath = prefsPath + std::string(path);
 	prefsPath = prefsPath + "_GamePrefs";
 	prefsPath = prefsPath + ".csv";
@@ -243,7 +243,7 @@ void Level::save(std::string path)
 
 
 	//Render Definitions
-	std::string renderPath = "pformLevel_";
+	std::string renderPath = "data/Platformer/pformLevel_";
 	renderPath = renderPath + std::string(path);
 	renderPath = renderPath + "_RenderDef";
 	renderPath = renderPath + ".csv"; 
@@ -258,7 +258,7 @@ void Level::save(std::string path)
 	}
 	
 	//Spawn Definitions
-	std::string spawnPath = "pformLevel_";
+	std::string spawnPath = "data/Platformer/pformLevel_";
 	spawnPath = spawnPath + std::string(path);
 	spawnPath = spawnPath + "_SpawnDef";
 	spawnPath = spawnPath + ".csv";
@@ -273,7 +273,7 @@ void Level::save(std::string path)
 	}
 
 	//Atlas Definitions
-	std::string atlasPath = "pformLevel_";
+	std::string atlasPath = "data/Platformer/pformLevel_";
 	atlasPath = atlasPath + std::string(path);
 	atlasPath = atlasPath + "_AtlasDef";
 	atlasPath = atlasPath + ".csv";
