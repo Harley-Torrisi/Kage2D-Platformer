@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base_with_gameobject", "pro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base_with_physics", "projects\base_with_physics\base_with_physics.vcxproj", "{7190FE2B-F555-4537-A8D7-8DD1D2F772B6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Platformer", "projects\Platformer\Platformer.vcxproj", "{02557B24-C062-4579-A617-6F4732254420}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base_platformer", "projects\base_platformer\base_platformer.vcxproj", "{02557B24-C062-4579-A617-6F4732254420}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

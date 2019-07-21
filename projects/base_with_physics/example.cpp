@@ -18,6 +18,7 @@ bool Example::start()
 {
 	// Initialise the physics system. Set the default gravity to 9.8m/s^2 down.
 	kage::Physics::init(b2Vec2(0, 9.8));
+	//kage::World::scale(50);
 	// Floor, left wall and right wall static colliders.
 	kage::Physics::BoxBuilder().pos(kf::Vector2(15, 16)).size(30, 1).build(kage::Physics::getDefaultStatic());
 	kage::Physics::BoxBuilder().pos(kf::Vector2(0, 8)).size(1, 16).build(kage::Physics::getDefaultStatic());
@@ -54,7 +55,7 @@ void Example::update(float deltaT)
 
 void Example::render()
 {
-	m_window.draw(*m_backgroundSprite);
+	//m_window.draw(*m_backgroundSprite);
 	// The next line draws the physics debug info. This should be removed in a final release.
 	kage::Physics::debugDraw(&m_window, 64);
 }
