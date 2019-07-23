@@ -2,7 +2,7 @@
 #include "example.h"
 #include "level.h"
 #include "PlayerObject.h"
-
+#include "gameobject.h"
 
 sf::RenderWindow p_window;
 //Level *p_level;
@@ -65,7 +65,8 @@ void PlayerManager::start()
 	p_level = new Level();
 	p_level->load(p_levelName);
 
-	kage::Physics::init(b2Vec2(0, 0.8));
+	kage::Physics::init(b2Vec2(0, 15));
+	kage::Physics::getDefaultStatic()->SetUserData(new kage::GameObject());
 	scaleRacio = 64 / p_level->tilePX;
 	posOffset = p_level->tilePX / 64 / 2;
 
@@ -84,8 +85,7 @@ void PlayerManager::start()
 			if (atlasDef.death)
 				objectDef.m_tags.add("death");
 			worldObjects.push_back(objectDef);
-		}
-		
+		}		
 	}
 
 	//Rabbit *rabbit = kage::World::build<Rabbit>();
@@ -116,12 +116,14 @@ void PlayerManager::update(float deltaT)
 
 				playerOne = kage::World::build<PlayerObject>();
 				playerOne->position(spawns[ran].x / scaleRacio + posOffset, spawns[ran].y / scaleRacio + posOffset);
+				playerOne->playerIndex = 0;
 
 				int p1Ran = ran;
 				while (p1Ran == ran)
 					 ran = rand() % spawns.size();
 
 				playerTwo = kage::World::build<PlayerObject>();
+				playerTwo->playerIndex = 1;
 				playerTwo->position(spawns[ran].x / scaleRacio + posOffset, spawns[ran].y / scaleRacio + posOffset);
 				playerTwo->m_sprite = kage::TextureManager::getSprite("data/Platformer/playerBlueSheet.png");
 				kage::selectSpriteTile1D(playerTwo->m_sprite, 0, 48, 48);

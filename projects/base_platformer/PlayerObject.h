@@ -11,8 +11,13 @@ public:
 	void update(float deltaT);
 	void onCollision(GameObject *obj);
 
+	void MovePlayer();
+
 	sf::Sprite *charAtlas;
 
 	int animIndex = 0;
+	int playerIndex;
+
+	float timeMasterDude;
 };
 

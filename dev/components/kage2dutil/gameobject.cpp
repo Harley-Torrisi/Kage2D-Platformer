@@ -34,7 +34,7 @@ namespace kage
 		if(m_physicsStyle == e_psBox2D)
 		{
 			m_position.set(m_body->GetPosition().x*kage::World::scale(), m_body->GetPosition().y*kage::World::scale());
-			m_rotation = m_body->GetAngle();
+			//m_rotation = m_body->GetAngle();
 		}
 	}
 

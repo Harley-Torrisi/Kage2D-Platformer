@@ -7,7 +7,10 @@ GameObjectDefinition::GameObjectDefinition(int x, int y, float scaleRatio, float
 	//m_sprite = &sprite;
 	m_physicsStyle = GameObject::e_psBox2D;
 
-	collider2D = kage::Physics::BoxBuilder().pos(kf::Vector2(x / scaleRatio + offsetValue, y / scaleRatio + offsetValue)).size(1 / scaleRatio, 1 / scaleRatio).build(kage::Physics::getDefaultStatic());
+	collider2D = kage::Physics::BoxBuilder()
+		.pos(kf::Vector2(x / scaleRatio + offsetValue, y / scaleRatio + offsetValue)).size(1 / scaleRatio, 1 / scaleRatio)
+		.friction(0.0f)
+		.build(kage::Physics::getDefaultStatic());
 	collider2D->SetSensor(!collideable);
 	
 }
