@@ -2,6 +2,7 @@
 #include "example.h"
 #include "windows.h"
 #include "xinput.h"
+#include "Bullet.h"
 
 
 PlayerObject::PlayerObject()
@@ -31,7 +32,7 @@ PlayerObject::PlayerObject()
 		.build(m_body); // We need to tell the builder which body to attach to
 
 	b2Fixture *sensor = kage::Physics::BoxBuilder()
-		.size(kf::Vector2(0.35f, 0.35f))
+		.size(kf::Vector2(0.6f, 0.35f))
 		.pos(kf::Vector2(0.0f, 0.35f))
 		.build(m_body);
 	sensor->SetSensor(true);
@@ -100,10 +101,7 @@ void PlayerObject::MovePlayer()
 	//std::cout << angle << "\n";
 
 
-	int speed = 5; //Get from game prefs later
-	float decelSpeed = 5.0f;
-	float jumpDampen = 0.01f;
-	int jumpForce = 350;
+	
 
 	b2Vec2 myPos = m_body->GetPosition();
 	
@@ -115,6 +113,7 @@ void PlayerObject::MovePlayer()
 	vel.x = 0;
 	if (controller.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
 	{
+		
 		vel.x = -speed;
 	}
 	else if (controller.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
@@ -136,4 +135,14 @@ void PlayerObject::MovePlayer()
 
 	m_rotation = angle;
 	//m_body->SetTransform(m_body->GetPosition(), angle);
+
+	bulletTimer += timeMasterDude;
+	if (controller.Gamepad.bRightTrigger != 0 && bulletTimer > (timeMasterDude + bulletROF))
+	{
+		bulletTimer = timeMasterDude;
+		Bullet *bullet = kage::World::build<Bullet>();
+		bullet->parent = this;
+		bullet->direction = b2Vec2(cos(angle), sin(angle));
+		bullet->position(m_body->GetPosition());
+	}
 }

@@ -15,5 +15,6 @@ public:
 	b2Fixture *collider2D;
 
 	void toggleCollision(bool collissionOn);
+
 };
 

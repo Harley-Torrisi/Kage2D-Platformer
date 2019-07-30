@@ -117,13 +117,17 @@ void PlayerManager::update(float deltaT)
 				playerOne = kage::World::build<PlayerObject>();
 				playerOne->position(spawns[ran].x / scaleRacio + posOffset, spawns[ran].y / scaleRacio + posOffset);
 				playerOne->playerIndex = 0;
+				playerOne->speed = p_level->playerMoveSpeed;
+				playerOne->jumpForce = p_level->playerJumpForce;
 
 				int p1Ran = ran;
 				while (p1Ran == ran)
 					 ran = rand() % spawns.size();
-
+				
 				playerTwo = kage::World::build<PlayerObject>();
 				playerTwo->playerIndex = 1;
+				playerTwo->speed = p_level->playerMoveSpeed;
+				playerTwo->jumpForce = p_level->playerJumpForce;
 				playerTwo->position(spawns[ran].x / scaleRacio + posOffset, spawns[ran].y / scaleRacio + posOffset);
 				playerTwo->m_sprite = kage::TextureManager::getSprite("data/Platformer/playerBlueSheet.png");
 				kage::selectSpriteTile1D(playerTwo->m_sprite, 0, 48, 48);
@@ -159,5 +163,5 @@ void PlayerManager::update(float deltaT)
 void PlayerManager::render()
 {
 	p_level->render(p_window);
-	kage::Physics::debugDraw(&p_window, 64);
+	//kage::Physics::debugDraw(&p_window, 64);
 }

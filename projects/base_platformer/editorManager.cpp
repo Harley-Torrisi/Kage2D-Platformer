@@ -179,8 +179,8 @@ void editorManager::update(float deltaT)
 	ImGui::Separator();
 	ImGui::Text("Gameplay Settings:");
 	ImGui::Text("\n");
-	ImGui::SliderInt("Player Move Speed", &level->playerMoveSpeed, 250, 1000);
-	ImGui::SliderInt("Player Jump Force", &level->playerJumpForce, 50, 200);
+	ImGui::SliderInt("Player Move Speed", &level->playerMoveSpeed, 2, 7);
+	ImGui::SliderInt("Player Jump Force", &level->playerJumpForce, 350, 800);
 	ImGui::Text("\n");
 	ImGui::SliderInt("Player Shoot Damage", &level->shootDamage, 1, 1000);
 	ImGui::SliderInt("Player Jump Attack Damage", &level->jumpOnTopDamage, 0, 1000);

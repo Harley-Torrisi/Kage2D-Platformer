@@ -6,7 +6,7 @@ GameObjectDefinition::GameObjectDefinition(int x, int y, float scaleRatio, float
 {
 	//m_sprite = &sprite;
 	m_physicsStyle = GameObject::e_psBox2D;
-
+	m_tags.add("blocking");
 	collider2D = kage::Physics::BoxBuilder()
 		.pos(kf::Vector2(x / scaleRatio + offsetValue, y / scaleRatio + offsetValue)).size(1 / scaleRatio, 1 / scaleRatio)
 		.friction(0.0f)
@@ -28,11 +28,11 @@ void GameObjectDefinition::update(float deltaT)
 
 void GameObjectDefinition::onCollision(GameObject * obj)
 {
-	//if (obj->m_tags.has("enemy"))
-	//{
-	//	m_dead = true;			// kills itself
-	//	//obj->m_dead = true;	// kills the other object
-	//}
+	if (obj->m_tags.has("Bullet"))
+	{
+		m_dead = true;			// kills itself
+		//obj->m_dead = true;	// kills the other object
+	}
 }
 
 void GameObjectDefinition::toggleCollision(bool collissionOn)
